@@ -1,4 +1,4 @@
-import { LucideIcon } from 'lucide-react-native';
+import { Video as LucideIcon } from 'lucide-react-native';
 
 interface IconProps {
   name: LucideIcon;
