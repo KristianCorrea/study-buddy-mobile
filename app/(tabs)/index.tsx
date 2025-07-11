@@ -78,7 +78,7 @@ export default function HomeScreen() {
           <View style={styles.actionButtons}>
             <TouchableOpacity 
               style={styles.actionButton}
-              onPress={() => {/* Navigate to camera */}}
+              onPress={() => router.push('/scan-book-selection')}
               activeOpacity={0.8}
             >
               <Camera size={32} color="#667eea" />

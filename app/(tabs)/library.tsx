@@ -1,10 +1,14 @@
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BookOpen, Plus, Eye, Trash2, Camera } from 'lucide-react-native';
+import { BookOpen, Plus, Eye, Trash2, Camera, AlertCircle } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
-import { Image } from 'expo-image';
+import { router } from 'expo-router';
+import AddBookModal from '@/components/AddBookModal';
 
-const mockBooks = [
+export default function LibraryScreen() {
+  const [showAddBookModal, setShowAddBookModal] = useState(false);
+  const [mockBooks, setMockBooks] = useState([
   {
     id: '1',
     title: 'Introduction to Psychology',
@@ -19,9 +23,18 @@ const mockBooks = [
     quizCount: 8,
     lastStudied: '1 day ago',
   },
-];
+  ]);
 
-export default function LibraryScreen() {
+  const handleAddBook = (bookName: string) => {
+    const newBook = {
+      id: Date.now().toString(),
+      title: bookName,
+      progress: 0,
+      quizCount: 0,
+      lastStudied: 'Never',
+    };
+    setMockBooks(prev => [...prev, newBook]);
+  };
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
       <View style={styles.emptyIcon}>
@@ -29,9 +42,12 @@ export default function LibraryScreen() {
       </View>
       <Text style={styles.emptyTitle}>No books yet</Text>
       <Text style={styles.emptySubtitle}>Start by scanning one!</Text>
-      <TouchableOpacity style={styles.scanButton} activeOpacity={0.8}>
+      <TouchableOpacity 
+        style={styles.scanButton} 
+        onPress={() => setShowAddBookModal(true)}
+        activeOpacity={0.8}>
         <Camera size={20} color="#ffffff" />
-        <Text style={styles.scanButtonText}>Scan Your First Book</Text>
+        <Text style={styles.scanButtonText}>Add Your First Book</Text>
       </TouchableOpacity>
     </View>
   );
@@ -64,7 +80,14 @@ export default function LibraryScreen() {
           <Text style={styles.actionButtonText}>View</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.actionButton} activeOpacity={0.8}>
+        <TouchableOpacity 
+          style={styles.actionButton} 
+          onPress={() => router.push({
+            pathname: '/scan-pages',
+            params: { bookId: book.id }
+          })}
+          activeOpacity={0.8}
+        >
           <Plus size={16} color="#667eea" />
           <Text style={styles.actionButtonText}>Add Pages</Text>
         </TouchableOpacity>
@@ -94,6 +117,18 @@ export default function LibraryScreen() {
         
         {/* Content */}
         <View style={styles.content}>
+          {/* Add Book Button (moved to top) */}
+          <View style={styles.addButtonContainer}>
+            <TouchableOpacity 
+              style={styles.addBookButton} 
+              onPress={() => setShowAddBookModal(true)}
+              activeOpacity={0.8}
+            >
+              <Plus size={24} color="#ffffff" />
+              <Text style={styles.addBookButtonText}>Add New Book</Text>
+            </TouchableOpacity>
+          </View>
+          
           {mockBooks.length === 0 ? (
             renderEmptyState()
           ) : (
@@ -102,17 +137,13 @@ export default function LibraryScreen() {
             </View>
           )}
         </View>
-        
-        {/* Add Book Button (when books exist) */}
-        {mockBooks.length > 0 && (
-          <View style={styles.addButtonContainer}>
-            <TouchableOpacity style={styles.addBookButton} activeOpacity={0.8}>
-              <Plus size={24} color="#ffffff" />
-              <Text style={styles.addBookButtonText}>Add New Book</Text>
-            </TouchableOpacity>
-          </View>
-        )}
       </ScrollView>
+      
+      <AddBookModal 
+        visible={showAddBookModal}
+        onClose={() => setShowAddBookModal(false)}
+        onAddBook={handleAddBook}
+      />
     </View>
   );
 }
@@ -280,8 +311,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 107, 107, 0.1)',
   },
   addButtonContainer: {
-    paddingHorizontal: 24,
-    paddingVertical: 32,
+    marginBottom: 24,
   },
   addBookButton: {
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
