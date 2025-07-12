@@ -75,9 +75,19 @@ export default function LibraryScreen() {
       </View>
       
       <View style={styles.bookActions}>
-        <TouchableOpacity style={styles.actionButton} activeOpacity={0.8}>
+        <TouchableOpacity 
+          style={styles.actionButton} 
+          onPress={() => router.push({
+            pathname: '/quiz',
+            params: { 
+              bookId: book.id,
+              bookTitle: book.title 
+            }
+          })}
+          activeOpacity={0.8}
+        >
           <Eye size={16} color="#667eea" />
-          <Text style={styles.actionButtonText}>View</Text>
+          <Text style={styles.actionButtonText}>Quiz</Text>
         </TouchableOpacity>
         
         <TouchableOpacity 
