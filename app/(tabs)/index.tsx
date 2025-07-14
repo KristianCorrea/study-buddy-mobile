@@ -14,7 +14,8 @@ export default function HomeScreen() {
         style={StyleSheet.absoluteFillObject}
       />
       
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      {/* Added padding to the bottom of the screen to the content is no longer obscured by the navbar. */}
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerTop}>
@@ -115,6 +116,9 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 80,
   },
   header: {
     paddingHorizontal: 24,
