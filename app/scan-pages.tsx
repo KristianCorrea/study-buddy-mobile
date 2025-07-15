@@ -6,6 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Camera, ArrowLeft, RotateCcw, Check, X, Image as ImageIcon } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Image } from 'expo-image';
+import axios from 'axios'; // Make sure this is at the top
 
 export default function ScanPagesScreen() {
   const { bookId } = useLocalSearchParams();
@@ -70,22 +71,43 @@ export default function ScanPagesScreen() {
     }
   };
 
-  const finishScanning = () => {
+  const finishScanning = async () => {
     if (capturedImages.length === 0) {
       Alert.alert('No Images', 'Please capture at least one page before finishing.');
       return;
     }
-    
-    Alert.alert(
-      'Scanning Complete',
-      `Successfully scanned ${capturedImages.length} page${capturedImages.length > 1 ? 's' : ''}!`,
-      [
-        {
-          text: 'OK',
-          onPress: () => router.push('/(tabs)/library')
-        }
-      ]
-    );
+
+  const formData = new FormData();
+  formData.append('book_id', bookId); // bookId from useLocalSearchParams
+  
+  capturedImages.forEach((uri, idx) => {
+    const filename = uri.split('/').pop();
+    formData.append('files', {
+        uri,
+        name: filename || `image${idx}.jpg`,
+        type: 'image/jpeg',
+      });
+  });
+
+    try {
+      const response = await axios.post('http://127.0.0.1:8000/generate-lesson', {
+        'Content-Type': 'multipart/form-data',
+        'Accept': 'application/json'
+      });
+
+      Alert.alert(
+        'Scanning Complete',
+        `Successfully scanned ${capturedImages.length} page${capturedImages.length > 1 ? 's' : ''}!`,
+        [
+          {
+            text: 'OK',
+            onPress: () => router.push('/(tabs)/library')
+          }
+        ]
+      );
+    } catch (error) {
+      Alert.alert('Error', 'Failed to generate lesson. Please try again.');
+    }
   };
 
   const toggleCameraFacing = () => {
