@@ -5,7 +5,7 @@ import { BookOpen, Plus, Eye, Trash2, Camera, CircleAlert as AlertCircle } from 
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
 import AddBookModal from '@/components/AddBookModal';
-import axios  from 'axios';
+import { useBooks } from '@/contexts/BookContext';
 
 export default function LibraryScreen() {
   const [showAddBookModal, setShowAddBookModal] = useState(false);
