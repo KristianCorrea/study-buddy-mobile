@@ -19,23 +19,23 @@ export default function CreatePetScreen() {
 
   
 
-  // const handleContinue = async () => {
-  // if (petName.trim()) {
-  //   try {
-  //     const response = await axios.post('http://127.0.0.1:8000/api_tomadachi', {
-  //       name: petName,
-  //       pet_type: selectedPet,
-  //     });
+  const handleContinue = async () => {
+  if (petName.trim()) {
+    // try {
+    //   const response = await axios.post('http://127.0.0.1:8000/api_tomadachi', {
+    //     name: petName,
+    //     pet_type: selectedPet,
+    //   });
 
-  //     console.log('Pet created:', response.data);
+    //   console.log('Pet created:', response.data);
 
-  //     // Navigate to next screen
-  //     router.push('/(tabs)');
-  //   } catch (error) {
-  //     console.error('Error creating pet:', error.response?.data || error.message);
-  //   }
-  // }
-  // };
+      // Navigate to next screen
+      router.push('/(tabs)');
+    // } catch (error) {
+    //   console.error('Error creating pet:', error.response?.data || error.message);
+    // }
+  }
+  };
 
   return (
     <View style={styles.container}>
@@ -117,7 +117,7 @@ export default function CreatePetScreen() {
               styles.continueButton,
               !petName.trim() && styles.disabledButton
             ]}
-            // onPress={handleContinue}
+            onPress={handleContinue}
             disabled={!petName.trim()}
             activeOpacity={0.8}
           >

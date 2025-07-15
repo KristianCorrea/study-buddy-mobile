@@ -2,6 +2,8 @@
 export const formatTimestamp = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
+    // Use this to debug the time difference.
+    // console.log('last_studied:', date, 'now:', now, 'diff (min):', (now.getTime() - date.getTime()) / (1000 * 60));
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
 
     if (diffInMinutes < 1) return 'Just now';

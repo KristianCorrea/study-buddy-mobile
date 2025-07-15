@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BookOpen, Plus, Eye, Trash2, Camera, CircleAlert as AlertCircle } from 'lucide-react-native';
@@ -6,24 +6,24 @@ import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
 import AddBookModal from '@/components/AddBookModal';
 import { useBooks } from '@/contexts/BookContext';
+import { formatTimestamp } from '@/lib/utils';
+
+interface Book {
+  id: number;
+  user_id: number;
+  title: string;
+  description: string;
+  category: string;
+  last_studied: string | null;
+  created_at: string;
+}
 
 export default function LibraryScreen() {
   const [showAddBookModal, setShowAddBookModal] = useState(false);
-  const [mockBooks, setMockBooks] = useState([
-  {
-    id: '1',
-    title: 'Introduction to Psychology',
-    lastStudied: '2 hours ago',
-  },
-  {
-    id: '2',
-    title: 'Calculus: Early Transcendentals',
-    lastStudied: '1 day ago',
-  },
-  ]);
+  const { books, loading, addBook, deleteBook, markAsStudied } = useBooks();
 
   // Warns the user about their decision to prevent accidental deletion.
-  const confirmBookDelete = (bookId: string, bookTitle: string) => {
+  const confirmBookDelete = (bookId: number, bookTitle: string) => {
   Alert.alert(
     'Delete Book',
     `Are you sure you want to delete "${bookTitle}"?`,
@@ -35,31 +35,53 @@ export default function LibraryScreen() {
       {
         text: 'Delete',
         style: 'destructive',
-        onPress: () => { deleteBookCard(bookId);},
+        onPress: () => { handleDeleteBook(bookId);},
       },
     ],
     { cancelable: true }
   );
 };
 
-  // Deletes the appropriate book in the library via its book id. (TODO: WE NEED TO ALSO DELETE THE RECORD IN THE DB AS WELL.)
-  const deleteBookCard = (bookId: string) => { setMockBooks(prevBooks => prevBooks.filter(book => book.id !== bookId)); }
+const handleAddBook = (bookName: string) => {
+  addBook({
+    user_id: 1,           // Default user_id to 1
+    title: bookName,
+    description: "none",     // Set description to null
+    category: "none",        // Set category to null
+  });
+};
 
-  const handleAddBook = (bookName: string) => {
-    const newBook = {
-      id: Date.now().toString(),
-      title: bookName,
-      lastStudied: 'Never',
-    };
-    setMockBooks(prev => [...prev, newBook]);
+
+  const handleDeleteBook = (bookId: number) => {
+    // If error, show error message.
+    deleteBook(bookId);
   };
+
+  const handleTakeQuiz = async (book: Book) => {
+    // Mark the book as studied before navigating to quiz
+    await markAsStudied(book.id);
+    
+    router.push({
+      pathname: '/quiz',
+      params: { 
+        bookId: book.id,
+        bookTitle: book.title 
+      }
+    });
+  };
+
+  const formatLastStudied = (lastStudied: string | null) => {
+    if (!lastStudied) return 'Never Studied';
+    return "Last Studied: " + formatTimestamp(lastStudied);
+  };
+
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
       <View style={styles.emptyIcon}>
         <BookOpen size={64} color="#667eea" strokeWidth={1} />
       </View>
       <Text style={styles.emptyTitle}>No books yet</Text>
-      <Text style={styles.emptySubtitle}>Start by adding your first book, then scan your first page!</Text>
+      <Text style={styles.emptySubtitle}>Start by adding your first book!</Text>
       <TouchableOpacity 
         style={styles.scanButton} 
         onPress={() => setShowAddBookModal(true)}
@@ -71,7 +93,7 @@ export default function LibraryScreen() {
   );
 
   // This is where the book cards are automatically rendered.
-  const renderBookCard = (book: any) => (
+  const renderBookCard = (book: Book) => (
     <View key={book.id} style={styles.bookCard}>
       <View style={styles.bookHeader}>
 
@@ -83,27 +105,20 @@ export default function LibraryScreen() {
         {/*This is the book title and last studied status.*/}
         <View style={styles.bookInfo}>
           <Text style={styles.bookTitle}>{book.title}</Text> 
-          <Text style={styles.bookMeta}> Last Studied: {book.lastStudied} </Text> 
+          <Text style={styles.bookMeta}>{formatLastStudied(book.last_studied)  } </Text> 
         </View>
-
       </View>
-
+      
       <View style={styles.bookActions}>
 
         {/* Quiz Button. */}
         <TouchableOpacity 
           style={styles.actionButton} 
-          onPress={() => router.push({
-            pathname: '/quiz',
-            params: { 
-              bookId: book.id,
-              bookTitle: book.title 
-            }
-          })}
+          onPress={() => handleTakeQuiz(book)}
           activeOpacity={0.8}
         >
           <Eye size={16} color="#667eea" />
-          <Text style={styles.actionButtonText}> Quiz </Text>
+          <Text style={styles.actionButtonText}>Quiz</Text>
         </TouchableOpacity>
         
         {/* Add Page Button. */}
@@ -116,18 +131,25 @@ export default function LibraryScreen() {
           activeOpacity={0.8}
         >
           <Plus size={16} color="#667eea" />
-          <Text style={styles.actionButtonText}> Add Pages </Text>
+          <Text style={styles.actionButtonText}>Add Pages</Text>
         </TouchableOpacity>
         
         {/* Delete Button. */}
         <TouchableOpacity 
           style={styles.deleteButton} 
-          activeOpacity={0.8}
           onPress={() => confirmBookDelete(book.id, book.title)}
+          activeOpacity={0.8}
         >
           <Trash2 size={16} color="#ff6b6b" />
         </TouchableOpacity>
       </View>
+    </View>
+  );
+
+  const renderLoadingState = () => (
+    <View style={styles.loadingContainer}>
+      <ActivityIndicator size="large" color="#667eea" />
+      <Text style={styles.loadingText}>Loading your books...</Text>
     </View>
   );
 
@@ -150,7 +172,7 @@ export default function LibraryScreen() {
         
         {/* Content */}
         <View style={styles.content}>
-          {/* Add Book Button (moved to top) */}
+          {/* Add Book Button */}
           <View style={styles.addButtonContainer}>
             <TouchableOpacity 
               style={styles.addBookButton} 
@@ -161,13 +183,15 @@ export default function LibraryScreen() {
               <Text style={styles.addBookButtonText}> Add New Book </Text>
             </TouchableOpacity>
           </View>
-          
           {/* Renders every book stored onto the screen */}
-          {mockBooks.length === 0 ? (
+          {/* Loading State */}
+          {loading ? (
+            renderLoadingState()
+          ) : books.length === 0 ? (
             renderEmptyState()
           ) : (
-            <View style={styles.booksContainer}> 
-              {mockBooks.map(renderBookCard)} 
+            <View style={styles.booksContainer}>
+              {books.map(renderBookCard)}
             </View>
           )}
         </View>
@@ -214,6 +238,18 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 24,
   },
+  // Loading State needs testing.
+  loadingContainer: {
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  loadingText: {
+    fontSize: 16,
+    fontFamily: 'Poppins-Regular',
+    color: '#ffffff',
+    marginTop: 16,
+    opacity: 0.8,
+  },
   emptyState: {
     alignItems: 'center',
     paddingVertical: 60,
@@ -248,7 +284,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    borderWidth: 2, 
+    borderWidth: 2,
     borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   scanButtonText: {
@@ -266,7 +302,7 @@ const styles = StyleSheet.create({
   },
   bookHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 16,
   },
   bookIcon: {
@@ -291,6 +327,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Poppins-Regular',
     color: '#666',
+    marginBottom: 4,
+  },
+  // NOT USED
+  bookDescription: {
+    fontSize: 12,
+    fontFamily: 'Poppins-Regular',
+    color: '#999',
+    fontStyle: 'italic',
   },
   bookActions: {
     flexDirection: 'row',
