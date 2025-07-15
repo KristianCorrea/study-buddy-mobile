@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Heart, ArrowRight } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Image } from 'expo-image';
+// import axios  from 'axios';
 
 const petOptions = [
   { id: 'raccoon', emoji: '🦝', name: 'Raccoon', description: 'Clever and curious' },
@@ -16,10 +17,24 @@ export default function CreatePetScreen() {
   const [petName, setPetName] = useState('');
   const [selectedPet, setSelectedPet] = useState('raccoon');
 
-  const handleContinue = () => {
-    if (petName.trim()) {
+  
+
+  const handleContinue = async () => {
+  if (petName.trim()) {
+    // try {
+    //   const response = await axios.post('http://127.0.0.1:8000/api_tomadachi', {
+    //     name: petName,
+    //     pet_type: selectedPet,
+    //   });
+
+    //   console.log('Pet created:', response.data);
+
+      // Navigate to next screen
       router.push('/(tabs)');
-    }
+    // } catch (error) {
+    //   console.error('Error creating pet:', error.response?.data || error.message);
+    // }
+  }
   };
 
   return (
