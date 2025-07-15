@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BookOpen, Plus, Eye, Trash2, Camera, CircleAlert as AlertCircle } from 'lucide-react-native';
@@ -13,25 +13,42 @@ export default function LibraryScreen() {
   {
     id: '1',
     title: 'Introduction to Psychology',
-    progress: 0.75,
-    quizCount: 12,
     lastStudied: '2 hours ago',
   },
   {
     id: '2',
     title: 'Calculus: Early Transcendentals',
-    progress: 0.45,
-    quizCount: 8,
     lastStudied: '1 day ago',
   },
   ]);
+
+  // Warns the user about their decision to prevent accidental deletion.
+  const confirmBookDelete = (bookId: string, bookTitle: string) => {
+  Alert.alert(
+    'Delete Book',
+    `Are you sure you want to delete "${bookTitle}"?`,
+    [
+      {
+        text: 'Cancel'
+      }
+      ,
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () => { deleteBookCard(bookId);},
+      },
+    ],
+    { cancelable: true }
+  );
+};
+
+  // Deletes the appropriate book in the library via its book id. (TODO: WE NEED TO ALSO DELETE THE RECORD IN THE DB AS WELL.)
+  const deleteBookCard = (bookId: string) => { setMockBooks(prevBooks => prevBooks.filter(book => book.id !== bookId)); }
 
   const handleAddBook = (bookName: string) => {
     const newBook = {
       id: Date.now().toString(),
       title: bookName,
-      progress: 0,
-      quizCount: 0,
       lastStudied: 'Never',
     };
     setMockBooks(prev => [...prev, newBook]);
@@ -48,34 +65,32 @@ export default function LibraryScreen() {
         onPress={() => setShowAddBookModal(true)}
         activeOpacity={0.8}>
         <Camera size={20} color="#ffffff" />
-        <Text style={styles.scanButtonText}>Add Your First Book</Text>
+        <Text style={styles.scanButtonText}> Add Your First Book </Text>
       </TouchableOpacity>
     </View>
   );
 
-  const renderBookCard = (book: Book) => (
+  // This is where the book cards are automatically rendered.
+  const renderBookCard = (book: any) => (
     <View key={book.id} style={styles.bookCard}>
       <View style={styles.bookHeader}>
-        <View style={styles.bookIcon}>
-          <BookOpen size={24} color="#667eea" />
+
+        {/*This is the book icon.*/}
+        <View style={styles.bookIcon}> 
+          <BookOpen size={24} color="#667eea" /> 
         </View>
+
+        {/*This is the book title and last studied status.*/}
         <View style={styles.bookInfo}>
-          <Text style={styles.bookTitle}>{book.title}</Text>
-          <Text style={styles.bookMeta}>{book.quizCount} quizzes • {book.lastStudied}</Text>
+          <Text style={styles.bookTitle}>{book.title}</Text> 
+          <Text style={styles.bookMeta}> Last Studied: {book.lastStudied} </Text> 
         </View>
+
       </View>
-      
-      <View style={styles.progressSection}>
-        <View style={styles.progressHeader}>
-          <Text style={styles.progressLabel}>Progress</Text>
-          <Text style={styles.progressPercent}>{Math.round(book.progress * 100)}%</Text>
-        </View>
-        <View style={styles.progressBar}>
-          <View style={[styles.progressFill, { width: `${book.progress * 100}%` }]} />
-        </View>
-      </View>
-      
+
       <View style={styles.bookActions}>
+
+        {/* Quiz Button. */}
         <TouchableOpacity 
           style={styles.actionButton} 
           onPress={() => router.push({
@@ -88,9 +103,10 @@ export default function LibraryScreen() {
           activeOpacity={0.8}
         >
           <Eye size={16} color="#667eea" />
-          <Text style={styles.actionButtonText}>Quiz</Text>
+          <Text style={styles.actionButtonText}> Quiz </Text>
         </TouchableOpacity>
         
+        {/* Add Page Button. */}
         <TouchableOpacity 
           style={styles.actionButton} 
           onPress={() => router.push({
@@ -100,10 +116,15 @@ export default function LibraryScreen() {
           activeOpacity={0.8}
         >
           <Plus size={16} color="#667eea" />
-          <Text style={styles.actionButtonText}>Add Pages</Text>
+          <Text style={styles.actionButtonText}> Add Pages </Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.deleteButton} activeOpacity={0.8}>
+        {/* Delete Button. */}
+        <TouchableOpacity 
+          style={styles.deleteButton} 
+          activeOpacity={0.8}
+          onPress={() => confirmBookDelete(book.id, book.title)}
+        >
           <Trash2 size={16} color="#ff6b6b" />
         </TouchableOpacity>
       </View>
@@ -119,11 +140,12 @@ export default function LibraryScreen() {
         style={StyleSheet.absoluteFillObject}
       />
       
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      {/* Inserted padding  */}
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>My Library</Text>
-          <Text style={styles.subtitle}>Your study materials</Text>
+          <Text style={styles.title}> My Library </Text>
+          <Text style={styles.subtitle}> Your study materials </Text>
         </View>
         
         {/* Content */}
@@ -136,15 +158,16 @@ export default function LibraryScreen() {
               activeOpacity={0.8}
             >
               <Plus size={24} color="#ffffff" />
-              <Text style={styles.addBookButtonText}>Add New Book</Text>
+              <Text style={styles.addBookButtonText}> Add New Book </Text>
             </TouchableOpacity>
           </View>
           
+          {/* Renders every book stored onto the screen */}
           {mockBooks.length === 0 ? (
             renderEmptyState()
           ) : (
-            <View style={styles.booksContainer}>
-              {mockBooks.map(renderBookCard)}
+            <View style={styles.booksContainer}> 
+              {mockBooks.map(renderBookCard)} 
             </View>
           )}
         </View>
@@ -165,6 +188,9 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 100,
   },
   header: {
     paddingHorizontal: 24,
@@ -222,7 +248,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    borderWidth: 2,
+    borderWidth: 2, 
     borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   scanButtonText: {
@@ -265,35 +291,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Poppins-Regular',
     color: '#666',
-  },
-  progressSection: {
-    marginBottom: 16,
-  },
-  progressHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  progressLabel: {
-    fontSize: 14,
-    fontFamily: 'Poppins-Regular',
-    color: '#666',
-  },
-  progressPercent: {
-    fontSize: 14,
-    fontFamily: 'Poppins-SemiBold',
-    color: '#667eea',
-  },
-  progressBar: {
-    height: 6,
-    backgroundColor: '#e0e0e0',
-    borderRadius: 3,
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#667eea',
-    borderRadius: 3,
   },
   bookActions: {
     flexDirection: 'row',

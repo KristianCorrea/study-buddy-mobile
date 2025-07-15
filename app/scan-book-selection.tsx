@@ -9,15 +9,11 @@ const mockBooks = [
   {
     id: '1',
     title: 'Introduction to Psychology',
-    progress: 0.75,
-    quizCount: 12,
     lastStudied: '2 hours ago',
   },
   {
     id: '2',
     title: 'Calculus: Early Transcendentals',
-    progress: 0.45,
-    quizCount: 8,
     lastStudied: '1 day ago',
   },
 ];
@@ -98,7 +94,7 @@ export default function ScanBookSelectionScreen() {
                       </View>
                       <View style={styles.bookInfo}>
                         <Text style={styles.bookTitle}>{book.title}</Text>
-                        <Text style={styles.bookMeta}>{book.quizCount} quizzes • {book.lastStudied}</Text>
+                        <Text style={styles.bookMeta}>Last Studied: {book.lastStudied}</Text>
                       </View>
                       {selectedBook === book.id && (
                         <View style={styles.selectedIndicator}>
@@ -119,7 +115,7 @@ export default function ScanBookSelectionScreen() {
                 disabled={!selectedBook}
                 activeOpacity={0.8}
               >
-                <Camera size={20} color={selectedBook ? "#667eea" : "#999"} />
+                <Camera size={20} color={selectedBook ? "#667eea" : "rgba(77, 77, 77, 0.5)"} />
                 <Text style={[
                   styles.continueButtonText,
                   !selectedBook && styles.disabledButtonText
@@ -278,7 +274,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   disabledButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: 'rgba(133, 133, 133, 0.5)',
     shadowOpacity: 0,
     elevation: 0,
   },
@@ -288,6 +284,6 @@ const styles = StyleSheet.create({
     color: '#667eea',
   },
   disabledButtonText: {
-    color: '#999',
+    color: 'rgba(77, 77, 77, 0.5)',
   },
 });
