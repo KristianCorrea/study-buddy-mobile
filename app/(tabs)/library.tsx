@@ -42,7 +42,7 @@ export default function LibraryScreen() {
         <BookOpen size={64} color="#667eea" strokeWidth={1} />
       </View>
       <Text style={styles.emptyTitle}>No books yet</Text>
-      <Text style={styles.emptySubtitle}>Start by scanning one!</Text>
+      <Text style={styles.emptySubtitle}>Start by adding your first book, then scan your first page!</Text>
       <TouchableOpacity 
         style={styles.scanButton} 
         onPress={() => setShowAddBookModal(true)}
@@ -53,7 +53,7 @@ export default function LibraryScreen() {
     </View>
   );
 
-  const renderBookCard = (book: any) => (
+  const renderBookCard = (book: Book) => (
     <View key={book.id} style={styles.bookCard}>
       <View style={styles.bookHeader}>
         <View style={styles.bookIcon}>
