@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig, AxiosError, AxiosResponse } from 'axios';
+import axios from 'axios';
 
 const api = axios.create({
   baseURL: process.env.EXPO_PUBLIC_STUDDY_BUDDY_API_URL || 'http://127.0.0.1:8000',
@@ -10,21 +10,21 @@ const api = axios.create({
 
 // Add request interceptor for logging
 api.interceptors.request.use(
-  (config: AxiosRequestConfig) => {
+  (config) => {
     console.log('API Request:', config.method?.toUpperCase(), config.url);
     return config;
   },
-  (error: AxiosError) => {
+  (error) => {
     return Promise.reject(error);
   }
 );
 
 // Add response interceptor for error handling
 api.interceptors.response.use(
-  (response: AxiosResponse) => {
+  (response) => {
     return response;
   },
-  (error: AxiosError) => {
+  (error) => {
     console.error('API Error:', error.response?.status, error.response?.data);
     return Promise.reject(error);
   }

@@ -31,6 +31,7 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await api.get('/api/books');
       setBooks(response.data);
+      console.log(response.data);
     } catch (error) {
       console.error('Failed to fetch books:', error);
     } finally {
