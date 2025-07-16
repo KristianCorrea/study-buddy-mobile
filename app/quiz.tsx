@@ -8,8 +8,8 @@ import { StatusBar } from 'expo-status-bar';
 const quizQuestions = [
   {
     id: 1,
-    question: "What is the capital of France? but fart is super yummy in my tummy I love but fartI really love me some but fart. What is the capital of France? but fart is super yummy in my tummy I love but fartI really love me some but fart, What is the capital of France? but fart is super yummy in my tummy I love but fartI really love me some but fartWhat is the capital of France? but fart is super yummy in my tummy I love but fartI really love me some but fart",
-    choices: ["Madrid What is the capital of France? but fart is super yummy in my tummy I love but fartI really love me some but fart", "Berlin", "Paris", "Rome"],
+    question: "What is the capital of France?",
+    choices: ["Madrid What is the capital of France?", "Berlin", "Paris", "Rome"],
     answer: "Paris",
   },
   {
