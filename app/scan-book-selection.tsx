@@ -1,25 +1,15 @@
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { useState } from 'react';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BookOpen, ArrowLeft, Camera } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
-
-const mockBooks = [
-  {
-    id: '1',
-    title: 'Introduction to Psychology',
-    lastStudied: '2 hours ago',
-  },
-  {
-    id: '2',
-    title: 'Calculus: Early Transcendentals',
-    lastStudied: '1 day ago',
-  },
-];
+import { useBooks } from '@/contexts/BookContext';
+import { formatTimestamp } from '@/lib/utils';
 
 export default function ScanBookSelectionScreen() {
-  const [selectedBook, setSelectedBook] = useState<string | null>(null);
+  const [selectedBook, setSelectedBook] = useState<number | null>(null);
+  const { books, loading } = useBooks();
 
   const handleContinue = () => {
     if (selectedBook) {
@@ -47,6 +37,11 @@ export default function ScanBookSelectionScreen() {
     </View>
   );
 
+  const formatLastStudied = (lastStudied: string | null) => {
+    if (!lastStudied) return 'Never Studied';
+    return formatTimestamp(lastStudied);
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
@@ -73,12 +68,17 @@ export default function ScanBookSelectionScreen() {
         <View style={styles.content}>
           <Text style={styles.subtitle}>Choose which book you want to scan pages for</Text>
           
-          {mockBooks.length === 0 ? (
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#667eea" />
+              <Text style={styles.loadingText}>Loading your books...</Text>
+            </View>
+          ) : books.length === 0 ? (
             renderEmptyState()
           ) : (
             <>
               <View style={styles.booksContainer}>
-                {mockBooks.map((book) => (
+                {books.map((book) => (
                   <TouchableOpacity
                     key={book.id}
                     style={[
@@ -94,7 +94,7 @@ export default function ScanBookSelectionScreen() {
                       </View>
                       <View style={styles.bookInfo}>
                         <Text style={styles.bookTitle}>{book.title}</Text>
-                        <Text style={styles.bookMeta}>Last Studied: {book.lastStudied}</Text>
+                        <Text style={styles.bookMeta}>Last Studied: {formatLastStudied(book.last_studied)}</Text>
                       </View>
                       {selectedBook === book.id && (
                         <View style={styles.selectedIndicator}>
@@ -285,5 +285,18 @@ const styles = StyleSheet.create({
   },
   disabledButtonText: {
     color: 'rgba(77, 77, 77, 0.5)',
+  },
+  //DRY CODE ITS ALSO WITHIN LIBRARY.TSX
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  loadingText: {
+    fontSize: 18,
+    fontFamily: 'Poppins-Regular',
+    color: '#ffffff',
+    marginTop: 20,
   },
 });

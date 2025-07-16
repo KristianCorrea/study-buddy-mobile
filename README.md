@@ -1,50 +1,79 @@
-# Welcome to your Expo app 👋
+# 📱 Study Buddy Mobile (Expo App)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Welcome to the Study Buddy mobile app! This project is built with [Expo](https://expo.dev) and uses [file-based routing](https://docs.expo.dev/router/introduction/).
 
-## Get started
+---
 
-1. Install dependencies
+## 🚀 Quick Start
 
-   ```bash
-   npm install
-   ```
+### 1. **Install Dependencies**
 
-2. Start the app
+```bash
+npm install
+```
 
-   ```bash
-   npx expo start
-   ```
+### 2. **Configure Environment Variables**
 
-In the output, you'll find options to open the app in a
+- Find your **device's IPv4 address** (for backend API access).
+- Create a `.env` file in the project root with:
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+  ```env
+  EXPO_PUBLIC_STUDDY_BUDDY_API_URL=http://<YOUR_IPV4_ADDRESS>:8000
+  ```
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+  > **Tip:** On most systems, you can find your IP with `ipconfig` (Windows) or `ifconfig`/`ip a` (Mac/Linux).
 
-## Get a fresh project
+### 3. **Start the App**
 
-When you're ready, run:
+```bash
+npm run dev
+```
+
+- Choose to run on:
+  - Android emulator
+  - iOS simulator
+  - [Expo Go](https://expo.dev/go) (scan QR code)
+  - Web browser
+
+---
+
+## 🛠 Development
+
+- Edit files in the **app/** directory.
+- Uses [file-based routing](https://docs.expo.dev/router/introduction/).
+- API requests are configured to use the URL in your `.env` file.
+
+### Reset to a Fresh Project
 
 ```bash
 npm run reset-project
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+- Moves starter code to **app-example/**
+- Creates a blank **app/** directory
 
-## Learn more
+---
 
-To learn more about developing your project with Expo, look at the following resources:
+## 📚 Resources
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- [Expo Documentation](https://docs.expo.dev/)
+- [Expo Router Guide](https://docs.expo.dev/router/introduction/)
+- [Learn Expo Tutorial](https://docs.expo.dev/tutorial/introduction/)
 
-## Join the community
+---
 
-Join our community of developers creating universal apps.
+## 💬 Community
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- [Expo on GitHub](https://github.com/expo/expo)
+- [Expo Discord](https://chat.expo.dev)
+
+---
+
+## 📝 Notes
+
+- Make sure your backend server is accessible from your device.
+- If you change the API URL, restart the Expo server.
+
+---
+
+Happy coding! 🎉
