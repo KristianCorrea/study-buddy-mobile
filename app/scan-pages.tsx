@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView, Modal, ActivityIndicator } from 'react-native';
 import { useState, useRef } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
@@ -6,6 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Camera, ArrowLeft, RotateCcw, Check, X, Image as ImageIcon } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Image } from 'expo-image';
+import api from '@/lib/axios';
 
 export default function ScanPagesScreen() {
   const { bookId } = useLocalSearchParams();
@@ -13,6 +14,8 @@ export default function ScanPagesScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [capturedImages, setCapturedImages] = useState<string[]>([]);
   const [showCamera, setShowCamera] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const cameraRef = useRef<CameraView>(null);
 
   const MAX_IMAGES = 5;
@@ -70,22 +73,77 @@ export default function ScanPagesScreen() {
     }
   };
 
-  const finishScanning = () => {
+  const finishScanning = async () => {
     if (capturedImages.length === 0) {
       Alert.alert('No Images', 'Please capture at least one page before finishing.');
       return;
     }
+    setLoading(true);
+    setError(null);
     
-    Alert.alert(
-      'Scanning Complete',
-      `Successfully scanned ${capturedImages.length} page${capturedImages.length > 1 ? 's' : ''}!`,
-      [
-        {
-          text: 'OK',
-          onPress: () => router.push('/(tabs)/library')
-        }
-      ]
-    );
+    console.log('=== Starting image upload ===');
+    console.log('Book ID:', bookId);
+    console.log('Number of images:', capturedImages.length);
+    console.log('Image URIs:', capturedImages);
+    
+    try {
+      const formData = new FormData();
+      formData.append('book_id', String(bookId));
+      
+      capturedImages.forEach((uri, idx) => {
+        // Extract filename from URI
+        const name = uri.split('/').pop() || `page_${idx + 1}.jpg`;
+        
+        console.log(`Adding image ${idx + 1}:`, {
+          uri: uri,
+          name: name,
+          type: 'image/jpeg'
+        });
+        
+        // @ts-ignore: React Native FormData file object
+        formData.append('files', { uri, name, type: 'image/jpeg' } as any);
+      });
+      
+      console.log('FormData created successfully');
+      console.log('Making API request to /api/generate-lesson/'); // Note the trailing slash
+      
+      const response = await api.post('/api/generate-lesson/', formData, { // Add trailing slash
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'accept': 'application/json', // Add this header
+        },
+      });
+      
+      console.log('API Response:', response);
+      console.log('Response status:', response.status);
+      console.log('Response data:', response.data);
+      
+      setLoading(false);
+      Alert.alert(
+        'Scanning Complete',
+        `Successfully scanned ${capturedImages.length} page${capturedImages.length > 1 ? 's' : ''}!`,
+        [
+          {
+            text: 'OK',
+            onPress: () => router.push('/(tabs)/library')
+          }
+        ]
+      );
+    } catch (err: any) {
+      console.error('=== Upload Error Details ===');
+      console.error('Error object:', err);
+      console.error('Error message:', err?.message);
+      console.error('Error response:', err?.response);
+      console.error('Error status:', err?.response?.status);
+      console.error('Error data:', err?.response?.data);
+      console.error('Error config:', err?.config);
+      console.error('Error stack:', err?.stack);
+      
+      setLoading(false);
+      const errorMessage = err?.response?.data?.message || err?.message || 'Server error. Please try again.';
+      console.error('Final error message:', errorMessage);
+      setError(errorMessage);
+    }
   };
 
   const toggleCameraFacing = () => {
@@ -95,6 +153,26 @@ export default function ScanPagesScreen() {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
+      {/* Loading Modal */}
+      <Modal visible={loading} transparent animationType="fade">
+        <View style={styles.loadingOverlay}>
+          <View style={styles.loadingModal}>
+            <ActivityIndicator size="large" color="#667eea" />
+            <Text style={styles.loadingText}>Generating lesson...</Text>
+          </View>
+        </View>
+      </Modal>
+      {/* Error Modal */}
+      <Modal visible={!!error} transparent animationType="fade" onRequestClose={() => setError(null)}>
+        <View style={styles.loadingOverlay}>
+          <View style={styles.errorModal}>
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity style={styles.errorButton} onPress={() => setError(null)}>
+              <Text style={styles.errorButtonText}>Dismiss</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
       
       {showCamera && capturedImages.length < MAX_IMAGES ? (
         <View style={styles.cameraContainer}>
@@ -423,5 +501,49 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Poppins-SemiBold',
     color: '#ffffff',
+  },
+  loadingOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingModal: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 32,
+    alignItems: 'center',
+    minWidth: 220,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 18,
+    color: '#667eea',
+    fontFamily: 'Poppins-SemiBold',
+  },
+  errorModal: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 32,
+    alignItems: 'center',
+    minWidth: 220,
+  },
+  errorText: {
+    fontSize: 18,
+    color: '#ff6b6b',
+    fontFamily: 'Poppins-SemiBold',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  errorButton: {
+    backgroundColor: '#667eea',
+    borderRadius: 25,
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+  },
+  errorButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontFamily: 'Poppins-SemiBold',
   },
 });
