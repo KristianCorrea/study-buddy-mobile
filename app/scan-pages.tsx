@@ -122,7 +122,7 @@ export default function ScanPagesScreen() {
       setLoading(false);
       Alert.alert(
         'Scanning Complete',
-        `Successfully scanned ${capturedImages.length} page${capturedImages.length > 1 ? 's' : ''}!`,
+        `Successfully scanned ${capturedImages.length} page${capturedImages.length > 1 ? 's' : ''}!\n\n${response.data.questions_created} question${response.data.questions_created === 1 ? '' : 's'} generated.`,
         [
           {
             text: 'OK',
