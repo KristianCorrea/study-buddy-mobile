@@ -1,90 +1,86 @@
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ArrowLeft, Trophy, RotateCcw } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
-
-const quizQuestions = [
-  {
-    id: 1,
-    question: "What is the capital of France?",
-    choices: ["Madrid What is the capital of France?", "Berlin", "Paris", "Rome"],
-    answer: "Paris",
-  },
-  {
-    id: 2,
-    question: "Which planet is known as the Red Planet?",
-    choices: ["Earth", "Mars", "Venus", "Jupiter"],
-    answer: "Mars",
-  },
-  {
-    id: 3,
-    question: "Who wrote 'Hamlet'?",
-    choices: ["Charles Dickens", "William Shakespeare", "Jane Austen", "Mark Twain"],
-    answer: "William Shakespeare",
-  },
-  {
-    id: 4,
-    question: "What is the largest ocean on Earth?",
-    choices: ["Atlantic Ocean", "Indian Ocean", "Arctic Ocean", "Pacific Ocean"],
-    answer: "Pacific Ocean",
-  },
-  {
-    id: 5,
-    question: "Which element has the chemical symbol 'O'?",
-    choices: ["Gold", "Oxygen", "Osmium", "Zinc"],
-    answer: "Oxygen",
-  },
-  {
-    id: 6,
-    question: "How many continents are there?",
-    choices: ["5", "6", "7", "8"],
-    answer: "7",
-  },
-  {
-    id: 7,
-    question: "What year did the Titanic sink?",
-    choices: ["1912", "1905", "1920", "1898"],
-    answer: "1912",
-  },
-  {
-    id: 8,
-    question: "Which language is primarily spoken in Brazil?",
-    choices: ["Spanish", "Portuguese", "French", "Italian"],
-    answer: "Portuguese",
-  },
-  {
-    id: 9,
-    question: "What is the square root of 64?",
-    choices: ["6", "7", "8", "9"],
-    answer: "8",
-  },
-  {
-    id: 10,
-    question: "Who painted the Mona Lisa?",
-    choices: ["Leonardo da Vinci", "Vincent van Gogh", "Pablo Picasso", "Michelangelo"],
-    answer: "Leonardo da Vinci",
-  },
-];
+import { useQuestions } from '@/contexts/QuizContext';
+import { useEffect } from 'react';
+import { useMemo } from 'react';
 
 export default function QuizScreen() {
   const { bookId, bookTitle } = useLocalSearchParams();
+  const book_id = parseInt(bookId as string);
+  const { questions, loading, fetchQuestionsByBook } = useQuestions();
   const [current, setCurrent] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
+
+  useEffect(() => {
+    if (book_id) {
+      fetchQuestionsByBook(book_id);
+    }
+  }, [book_id]);
+
+  // Shuffle choices only when the current question changes
+  const shuffledChoices = useMemo(() => {
+    if (questions[current]) {
+      const allChoices = [
+        questions[current].correct_answer,
+        ...questions[current].wrong_answers
+      ];
+      return allChoices.sort(() => Math.random() - 0.5);
+    }
+    return [];
+  }, [questions, current]); // Only recalculate when questions or current changes
+
+  // Don't render quiz content until questions are loaded
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#667eea" />
+        <Text>Loading quiz...</Text>
+      </View>
+    );
+  }
+
+  // Check if no questions exist for this book
+  if (questions.length === 0) {
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyTitle}>No Questions Available</Text>
+        <Text style={styles.emptySubtitle}>
+          This book doesn't have any quiz questions yet. 
+          Scan some pages first to generate questions!
+        </Text>
+        <TouchableOpacity 
+          style={styles.scanButton}
+          onPress={() => router.push({
+            pathname: '/scan-pages',
+            params: { bookId: bookId }
+          })}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.scanButtonText}>Scan Pages</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // Now we know questions[current] exists
+  // const currentQuestion = questions[current];
 
   const handleChoice = (choice: string) => {
     setSelected(choice);
   };
 
   const handleNext = () => {
-    if (selected === quizQuestions[current].answer) {
+    if (selected === questions[current].correct_answer) {
       setScore(score + 1);
     }
 
-    if (current + 1 < quizQuestions.length) {
+    if (current + 1 < questions.length) {
       setCurrent(current + 1);
       setSelected(null);
     } else {
@@ -100,28 +96,18 @@ export default function QuizScreen() {
   };
 
   const handleFinish = () => {
-    // Show completion alert and navigate back
-    Alert.alert(
-      'Quiz Complete!',
-      `Great job! You scored ${score} out of ${quizQuestions.length} questions correctly.`,
-      [
-        {
-          text: 'OK',
-          onPress: () => router.back()
-        }
-      ]
-    );
+    router.back();
   };
 
   const getScoreColor = () => {
-    const percentage = (score / quizQuestions.length) * 100;
+    const percentage = (score / questions.length) * 100;
     if (percentage >= 80) return '#4CAF50'; // Green
     if (percentage >= 60) return '#FF9800'; // Orange
     return '#f44336'; // Red
   };
 
   const getScoreMessage = () => {
-    const percentage = (score / quizQuestions.length) * 100;
+    const percentage = (score / questions.length) * 100;
     if (percentage >= 90) return 'Excellent! 🎉';
     if (percentage >= 80) return 'Great job! 👏';
     if (percentage >= 70) return 'Good work! 👍';
@@ -171,13 +157,13 @@ export default function QuizScreen() {
               {/* Progress */}
               <View style={styles.progressSection}>
                 <Text style={styles.progressText}>
-                  Question {current + 1} of {quizQuestions.length}
+                  Question {current + 1} of {questions.length}
                 </Text>
                 <View style={styles.progressBar}>
                   <View 
                     style={[
                       styles.progressFill, 
-                      { width: `${((current + 1) / quizQuestions.length) * 100}%` }
+                      { width: `${((current + 1) / questions.length) * 100}%` }
                     ]} 
                   />
                 </View>
@@ -185,12 +171,12 @@ export default function QuizScreen() {
               
               {/* Question */}
               <Text style={styles.question}>
-                {quizQuestions[current].question}
+                {questions[current].question_text}
               </Text>
               
               {/* Choices */}
               <View style={styles.choices}>
-                {quizQuestions[current].choices.map((choice, index) => (
+                {shuffledChoices.map((choice, index) => (
                   <TouchableOpacity
                     key={index}
                     onPress={() => handleChoice(choice)}
@@ -224,7 +210,7 @@ export default function QuizScreen() {
                   styles.nextButtonText,
                   selected === null && styles.disabledButtonText
                 ]}>
-                  {current + 1 < quizQuestions.length ? "Next Question" : "Finish Quiz"}
+                  {current + 1 < questions.length ? "Next Question" : "Finish Quiz"}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -238,7 +224,7 @@ export default function QuizScreen() {
               {/* Score */}
               <Text style={styles.resultTitle}>Quiz Complete!</Text>
               <Text style={[styles.scoreText, { color: getScoreColor() }]}>
-                {score} / {quizQuestions.length}
+                {score} / {questions.length}
               </Text>
               <Text style={styles.scoreMessage}>{getScoreMessage()}</Text>
               
@@ -251,13 +237,13 @@ export default function QuizScreen() {
                 <View style={styles.scoreItem}>
                   <Text style={styles.scoreLabel}>Incorrect</Text>
                   <Text style={[styles.scoreValue, { color: '#f44336' }]}>
-                    {quizQuestions.length - score}
+                    {questions.length - score}
                   </Text>
                 </View>
                 <View style={styles.scoreItem}>
                   <Text style={styles.scoreLabel}>Accuracy</Text>
                   <Text style={[styles.scoreValue, { color: getScoreColor() }]}>
-                    {Math.round((score / quizQuestions.length) * 100)}%
+                    {Math.round((score / questions.length) * 100)}%
                   </Text>
                 </View>
               </View>
@@ -509,6 +495,47 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   finishButtonText: {
+    fontSize: 16,
+    fontFamily: 'Poppins-SemiBold',
+    color: '#ffffff',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  emptyTitle: {
+    fontSize: 24,
+    fontFamily: 'Poppins-Bold',
+    color: '#ffffff',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    fontSize: 16,
+    fontFamily: 'Poppins-Regular',
+    color: '#ffffff',
+    opacity: 0.8,
+    textAlign: 'center',
+    marginBottom: 32,
+    lineHeight: 24,
+  },
+  scanButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 25,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  scanButtonText: {
     fontSize: 16,
     fontFamily: 'Poppins-SemiBold',
     color: '#ffffff',
