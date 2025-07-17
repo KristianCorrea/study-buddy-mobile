@@ -21,3 +21,14 @@ return new Date(dateString).toLocaleDateString();
 export const formatDateTime = (dateString: string) => {
 return new Date(dateString).toLocaleString();
 };
+
+export const safeStringify = (obj: any, indent = 2) => {
+    const seen = new WeakSet();
+    return JSON.stringify(obj, (key, value) => {
+      if (typeof value === "object" && value !== null) {
+        if (seen.has(value)) return "[Circular]";
+        seen.add(value);
+      }
+      return value;
+    }, indent);
+  }

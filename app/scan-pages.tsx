@@ -112,6 +112,7 @@ export default function ScanPagesScreen() {
           'Content-Type': 'multipart/form-data',
           'accept': 'application/json', // Add this header
         },
+        timeout: 35000,
       });
       
       console.log('API Response:', response);
@@ -130,14 +131,21 @@ export default function ScanPagesScreen() {
         ]
       );
     } catch (err: any) {
-      console.error('=== Upload Error Details ===');
-      console.error('Error object:', err);
-      console.error('Error message:', err?.message);
-      console.error('Error response:', err?.response);
-      console.error('Error status:', err?.response?.status);
-      console.error('Error data:', err?.response?.data);
-      console.error('Error config:', err?.config);
-      console.error('Error stack:', err?.stack);
+      if (err.code === 'ECONNABORTED') {
+        Alert.alert('Request timed out', 'This process is taking too long. Please try again later.');
+      } else {
+        console.error('=== Upload Error Details ===');
+        console.error("Error request:", err.request);
+        console.log('Error object:', err);
+        console.error('Error code:', err.code);
+        console.error('Error message:', err?.message);
+        console.error('Error response:', err?.response);
+        console.error('Error status:', err?.response?.status);
+        console.error('Error data:', err?.response?.data);
+        console.error('Error config:', err?.config);
+        console.error('Error stack:', err?.stack);
+      }
+      
       
       setLoading(false);
       const errorMessage = err?.response?.data?.message || err?.message || 'Server error. Please try again.';
