@@ -15,6 +15,7 @@ export default function QuizScreen() {
   const { questions, loading, fetchQuestionsByBook } = useQuestions();
   const [current, setCurrent] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
 
@@ -85,17 +86,23 @@ export default function QuizScreen() {
   // const currentQuestion = questions[current];
 
   const handleChoice = (choice: string) => {
-    setSelected(choice);
+    if (!showFeedback) {
+      setSelected(choice);
+    }
   };
 
-  const handleNext = () => {
+  const handleCheckAnswer = () => {
+    setShowFeedback(true);
     if (selected === questions[current].correct_answer) {
       setScore(score + 1);
     }
+  };
 
+  const handleNext = () => {
     if (current + 1 < questions.length) {
       setCurrent(current + 1);
       setSelected(null);
+      setShowFeedback(false);
     } else {
       setFinished(true);
     }
@@ -104,6 +111,7 @@ export default function QuizScreen() {
   const handleRetry = () => {
     setCurrent(0);
     setSelected(null);
+    setShowFeedback(false);
     setScore(0);
     setFinished(false);
   };
@@ -126,6 +134,36 @@ export default function QuizScreen() {
     if (percentage >= 70) return 'Good work! 👍';
     if (percentage >= 60) return 'Not bad! 📚';
     return 'Keep studying! 💪';
+  };
+
+  const getChoiceStyle = (choice: string) => {
+    if (!showFeedback) {
+      return selected === choice ? styles.selectedChoice : styles.choiceButton;
+    }
+    
+    // Show feedback
+    if (choice === questions[current].correct_answer) {
+      return styles.correctChoice;
+    } else if (choice === selected && choice !== questions[current].correct_answer) {
+      return styles.wrongChoice;
+    } else {
+      return styles.choiceButton;
+    }
+  };
+
+  const getChoiceTextStyle = (choice: string) => {
+    if (!showFeedback) {
+      return selected === choice ? styles.selectedChoiceText : styles.choiceText;
+    }
+    
+    // Show feedback
+    if (choice === questions[current].correct_answer) {
+      return styles.correctChoiceText;
+    } else if (choice === selected && choice !== questions[current].correct_answer) {
+      return styles.wrongChoiceText;
+    } else {
+      return styles.choiceText;
+    }
   };
 
   return (
@@ -193,39 +231,46 @@ export default function QuizScreen() {
                   <TouchableOpacity
                     key={index}
                     onPress={() => handleChoice(choice)}
-                    style={[
-                      styles.choiceButton,
-                      selected === choice && styles.selectedChoice
-                    ]}
+                    style={getChoiceStyle(choice)}
                     activeOpacity={0.8}
+                    disabled={showFeedback}
                   >
-                    <Text style={[
-                      styles.choiceText,
-                      selected === choice && styles.selectedChoiceText
-                    ]}>
+                    <Text style={getChoiceTextStyle(choice)}>
                       {choice}
                     </Text>
                   </TouchableOpacity>
                 ))}
               </View>
               
-              {/* Next Button */}
-              <TouchableOpacity
-                onPress={handleNext}
-                disabled={selected === null}
-                style={[
-                  styles.nextButton,
-                  selected === null && styles.disabledButton
-                ]}
-                activeOpacity={0.8}
-              >
-                <Text style={[
-                  styles.nextButtonText,
-                  selected === null && styles.disabledButtonText
-                ]}>
-                  {current + 1 < questions.length ? "Next Question" : "Finish Quiz"}
-                </Text>
-              </TouchableOpacity>
+              {/* Action Button */}
+              {!showFeedback ? (
+                <TouchableOpacity
+                  onPress={handleCheckAnswer}
+                  disabled={selected === null}
+                  style={[
+                    styles.checkButton,
+                    selected === null && styles.disabledButton
+                  ]}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[
+                    styles.checkButtonText,
+                    selected === null && styles.disabledButtonText
+                  ]}>
+                    Check Answer
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  onPress={handleNext}
+                  style={styles.nextButton}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.nextButtonText}>
+                    {current + 1 < questions.length ? "Next Question" : "Finish Quiz"}
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           ) : (
             <View style={styles.resultCard}>
@@ -401,7 +446,10 @@ const styles = StyleSheet.create({
     borderColor: '#d3d3d3',
   },
   selectedChoice: {
-    backgroundColor: '#667eea',
+    padding: 16,
+    borderRadius: 12,
+    backgroundColor: '#f8f9fa',
+    borderWidth: 2,
     borderColor: '#667eea',
   },
   choiceText: {
@@ -411,8 +459,48 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   selectedChoiceText: {
-    color: '#ffffff',
+    fontSize: 16,
     fontFamily: 'Poppins-SemiBold',
+    color: '#667eea',
+    textAlign: 'center',
+  },
+  correctChoice: {
+    padding: 16,
+    borderRadius: 12,
+    backgroundColor: '#d4edda',
+    borderWidth: 2,
+    borderColor: '#4CAF50',
+  },
+  correctChoiceText: {
+    fontSize: 16,
+    fontFamily: 'Poppins-SemiBold',
+    color: '#155724',
+    textAlign: 'center',
+  },
+  wrongChoice: {
+    padding: 16,
+    borderRadius: 12,
+    backgroundColor: '#f8d7da',
+    borderWidth: 2,
+    borderColor: '#f44336',
+  },
+  wrongChoiceText: {
+    fontSize: 16,
+    fontFamily: 'Poppins-SemiBold',
+    color: '#721c24',
+    textAlign: 'center',
+  },
+  checkButton: {
+    backgroundColor: '#667eea',
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 25,
+    alignItems: 'center',
+  },
+  checkButtonText: {
+    fontSize: 18,
+    fontFamily: 'Poppins-SemiBold',
+    color: '#ffffff',
   },
   nextButton: {
     backgroundColor: '#667eea',
