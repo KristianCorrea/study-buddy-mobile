@@ -446,7 +446,10 @@ const styles = StyleSheet.create({
     borderColor: '#d3d3d3',
   },
   selectedChoice: {
-    backgroundColor: '#667eea',
+    padding: 16,
+    borderRadius: 12,
+    backgroundColor: '#f8f9fa',
+    borderWidth: 2,
     borderColor: '#667eea',
   },
   choiceText: {
@@ -456,8 +459,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   selectedChoiceText: {
-    color: '#ffffff',
+    fontSize: 16,
     fontFamily: 'Poppins-SemiBold',
+    color: '#667eea',
+    textAlign: 'center',
   },
   correctChoice: {
     padding: 16,
@@ -486,7 +491,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   checkButton: {
-    backgroundColor: '#FF9800',
+    backgroundColor: '#667eea',
     paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 25,
