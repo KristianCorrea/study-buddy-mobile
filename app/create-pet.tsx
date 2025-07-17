@@ -6,6 +6,7 @@ import { Heart, ArrowRight } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Image } from 'expo-image';
 // import axios  from 'axios';
+import { useUser } from '@/contexts/UserContext';
 
 const petOptions = [
   { id: 'raccoon', emoji: '🦝', name: 'Raccoon', description: 'Clever and curious' },
@@ -16,24 +17,22 @@ const petOptions = [
 export default function CreatePetScreen() {
   const [petName, setPetName] = useState('');
   const [selectedPet, setSelectedPet] = useState('raccoon');
+  const { setUser } = useUser();
 
   
 
   const handleContinue = async () => {
   if (petName.trim()) {
-    // try {
-    //   const response = await axios.post('http://127.0.0.1:8000/api_tomadachi', {
-    //     name: petName,
-    //     pet_type: selectedPet,
-    //   });
-
-    //   console.log('Pet created:', response.data);
-
-      // Navigate to next screen
-      router.push('/(tabs)');
-    // } catch (error) {
-    //   console.error('Error creating pet:', error.response?.data || error.message);
-    // }
+    setUser({
+      id: 1, // or generate/fetch the real user id
+      name: '', // set this if you have a user name input elsewhere
+      animalType: selectedPet,
+      animalName: petName,
+      level: 1,
+      xp: 0,
+      streak: 0,
+    });
+    router.push('/(tabs)');
   }
   };
 

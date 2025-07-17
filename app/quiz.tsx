@@ -7,6 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useQuestions } from '@/contexts/QuizContext';
 import { useEffect } from 'react';
 import { useMemo } from 'react';
+import { useUser } from '@/contexts/UserContext';
 
 export default function QuizScreen() {
   const { bookId, bookTitle } = useLocalSearchParams();
@@ -16,6 +17,18 @@ export default function QuizScreen() {
   const [selected, setSelected] = useState<string | null>(null);
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
+
+  const { user } = useUser();
+  // Make this reusable as it it repeated in the home screen.
+  const animalEmojiMap: Record<string, string> = {
+    raccoon: '🦝',
+    cat: '🐱',
+    dog: '🐶',
+    bunny: '🐰',
+    // Add more as needed
+  };
+
+  const petEmoji = user?.animalType ? animalEmojiMap[user.animalType] || '❓' : '❓';
 
   useEffect(() => {
     if (book_id) {
@@ -138,7 +151,7 @@ export default function QuizScreen() {
             <Text style={styles.title}>Quiz</Text>
             {/* Pet Face */}
             <View style={styles.petContainer}>
-              <Text style={styles.petEmoji}>🦝</Text>
+              <Text style={styles.petEmoji}>{petEmoji}</Text>
             </View>
             <Text style={styles.subtitle}>
               {bookTitle || 'Study Quiz'}

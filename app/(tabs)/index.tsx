@@ -3,8 +3,23 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Settings, Heart, Zap, Flame, Trophy, Camera, Brain } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
+import { useUser } from '@/contexts/UserContext';
 
 export default function HomeScreen() {
+  const { user } = useUser();
+
+  // Map animal types to emojis
+  const animalEmojiMap: Record<string, string> = {
+    raccoon: '🦝',
+    cat: '🐱',
+    dog: '🐶',
+    bunny: '🐰',
+    // Add more as needed
+  };
+
+  const petEmoji = user?.animalType ? animalEmojiMap[user.animalType] || '❓' : '❓';
+  const petName = user?.animalName || 'Buddy';
+
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
@@ -19,7 +34,8 @@ export default function HomeScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerTop}>
-            <Text style={styles.greeting}>Good morning! 👋</Text>
+            {/* TODO: MAKE THIS VARIABLE ON TIME */}
+            <Text style={styles.greeting}>Good afternoon! 👋</Text>
             <TouchableOpacity style={styles.settingsButton}>
               <Settings size={24} color="#ffffff" />
             </TouchableOpacity>
@@ -29,14 +45,14 @@ export default function HomeScreen() {
         {/* Pet Section */}
         <View style={styles.petSection}>
           <View style={styles.petContainer}>
-            <Text style={styles.petEmoji}>🦝</Text>
+            <Text style={styles.petEmoji}>{petEmoji}</Text>
             <View style={styles.healthContainer}>
               {[1, 2, 3, 4].map((heart) => (
                 <Heart key={heart} size={16} color="#ff6b6b" fill="#ff6b6b" />
               ))}
             </View>
           </View>
-          <Text style={styles.petName}>Buddy</Text>
+          <Text style={styles.petName}>{petName}</Text>
           <Text style={styles.petMood}>Happy & Ready to Study!</Text>
         </View>
         

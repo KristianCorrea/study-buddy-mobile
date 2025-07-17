@@ -1,7 +1,7 @@
 import React from 'react';
 import { BookProvider } from './BookContext';
-// import { UserProvider } from './UserContext';
 import { QuestionProvider } from './QuizContext';
+import { UserProvider } from './UserContext';
 
 interface AppProviderProps {
   children: React.ReactNode;
@@ -10,9 +10,11 @@ interface AppProviderProps {
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   return (
       <BookProvider>
-          <QuestionProvider>
-              {children}
-          </QuestionProvider>
+          <UserProvider>
+            <QuestionProvider>
+                {children}
+            </QuestionProvider>
+          </UserProvider>
       </BookProvider>
   );
 };
