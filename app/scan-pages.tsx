@@ -208,10 +208,17 @@ export default function ScanPagesScreen() {
             
             {/* Camera Controls */}
             <View style={styles.cameraControls}>
-              <View style={styles.capturedCount}>
+              <TouchableOpacity
+                style={styles.capturedCount}
+                onPress={() => {
+                  if (capturedImages.length > 0) setShowCamera(false);
+                }}
+                activeOpacity={capturedImages.length > 0 ? 0.8 : 1}
+                disabled={capturedImages.length === 0}
+              >
                 <ImageIcon size={20} color="#ffffff" />
                 <Text style={styles.capturedCountText}>{capturedImages.length}</Text>
-              </View>
+              </TouchableOpacity>
               
               <TouchableOpacity 
                 style={styles.captureButton}
