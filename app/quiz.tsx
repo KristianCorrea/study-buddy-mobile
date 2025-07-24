@@ -63,6 +63,14 @@ export default function QuizScreen() {
   if (questions.length === 0) {
     return (
       <View style={styles.emptyContainer}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+          activeOpacity={0.8}
+        >
+          <ArrowLeft size={24} color="#ffffff" />
+        </TouchableOpacity>
+        
         <Text style={styles.emptyTitle}>No Questions Available</Text>
         <Text style={styles.emptySubtitle}>
           This book doesn't have any quiz questions yet. 
@@ -611,6 +619,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 24,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 50, // adjust as needed for your layout
+    left: 24,
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    zIndex: 10,
   },
   emptyTitle: {
     fontSize: 24,
